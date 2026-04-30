@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VPG Mission Control — Telecom Infrastructure Intelligence</title>
+<meta name="description" content="The AI command platform for fiber and telecom project management. FTTH, HFC, 5G, BEAD, OSP. Built for the work.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@300;400;500;600&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   TOKENS — high contrast, readable, bold
+═══════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  /* Dark backgrounds — true black foundation */
+  --bg:       #05060A;
+  --bg2:      #080B12;
+  --bg3:      #0C1018;
+  --surf:     #12161F;
+  --surf2:    #181D28;
+  --surf3:    #1E2432;
+
+  /* Borders — visible, not invisible */
+  --ln:       rgba(255,255,255,.09);
+  --ln2:      rgba(255,255,255,.15);
+  --ln3:      rgba(255,255,255,.24);
+
+  /* Light section */
+  --lt:       #F8F7F4;
+  --lt2:      #EEECE7;
+  --lt3:      #E4E1DA;
+  --lt4:      #D8D4CB;
+  --ltln:     rgba(0,0,0,.09);
+  --ltln2:    rgba(0,0,0,.16);
+
+  /* Text — strong contrast */
+  --t0:       #F4F6FF;           /* near white — headlines */
+  --t1:       rgba(244,246,255,.82); /* body on dark */
+  --t2:       rgba(244,246,255,.52); /* secondary on dark */
+  --t3:       rgba(244,246,255,.28); /* muted on dark */
+
+  --dk:       #0A0B10;
+  --dk1:      rgba(10,11,16,.78);
+  --dk2:      rgba(10,11,16,.48);
+
+  /* Signal — vivid orange, the only accent */
+  --sig:      #FF5722;
+  --sig-b:    rgba(255,87,34,.18);
+  --sig-c:    rgba(255,87,34,.08);
+  --sig-d:    rgba(255,87,34,.45);
+
+  /* Data colors — vivid, readable */
+  --blue:     #5B8DEF;
+  --blue-b:   rgba(91,141,239,.14);
+  --teal:     #00C9B1;
+  --teal-b:   rgba(0,201,177,.12);
+  --grn:      #2ECC71;
+  --grn-b:    rgba(46,204,113,.12);
+  --amb:      #F5A623;
+  --amb-b:    rgba(245,166,35,.12);
+  --red:      #FF4757;
+  --red-b:    rgba(255,71,87,.12);
+
+  --f-serif: 'Instrument Serif', Georgia, serif;
+  --f-sans:  'Instrument Sans', system-ui, sans-serif;
+  --f-mono:  'Roboto Mono', 'Courier New', monospace;
+  --ease:    cubic-bezier(0.16,1,0.3,1);
+}
+
+html { scroll-behavior: auto; }
+body {
+  font-family: var(--f-sans);
+  background: var(--bg);
+  color: var(--t0);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  font-weight: 300;
+}
+
+/* grain */
+body::after {
+  content:'';position:fixed;inset:0;z-index:9997;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.5;
+}
+
+/* ═══════════════════════════════════════════
+   TYPE
+═══════════════════════════════════════════ */
+.eyebrow {
+  display:flex;align-items:center;gap:10px;margin-bottom:22px;
+}
+.eyebrow-bar { width:24px;height:2px;background:var(--sig);flex-shrink:0; }
+.eyebrow-txt {
+  font-family:var(--f-mono);font-size:10px;font-weight:500;
+  color:var(--sig);letter-spacing:3px;text-transform:uppercase;
+}
+.eyebrow.lt .eyebrow-bar { background:var(--dk2); }
+.eyebrow.lt .eyebrow-txt { color:var(--dk2); }
+
+.dh {
+  font-family:var(--f-serif);font-weight:400;
+  line-height:1.02;letter-spacing:-0.03em;color:var(--t0);
+}
+.dh em { font-style:italic;color:var(--t2); }
+.dh.dk { color:var(--dk); }
+.dh.dk em { color:var(--dk2); }
+
+.body {
+  font-size:16px;font-weight:300;line-height:1.82;
+  color:var(--t2);letter-spacing:-0.01em;
+}
+.body.dk { color:var(--dk1); }
+
+/* ═══════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════ */
+.btn {
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 24px;border-radius:9px;font-size:14px;
+  font-weight:500;font-family:var(--f-sans);text-decoration:none;
+  cursor:pointer;border:none;letter-spacing:-0.01em;
+  transition:all .22s var(--ease);white-space:nowrap;
+}
+.btn-lg { padding:15px 30px;font-size:15px;border-radius:10px; }
+.btn-sm { padding:8px 16px;font-size:12px;border-radius:7px; }
+.btn-sig { background:var(--sig);color:#fff; }
+.btn-sig:hover { background:#FF6B3D;transform:translateY(-2px);box-shadow:0 12px 40px var(--sig-d); }
+.btn-wh { background:var(--t0);color:var(--dk); }
+.btn-wh:hover { background:#fff;transform:translateY(-2px);box-shadow:0 12px 40px rgba(244,246,255,.15); }
+.btn-gl { background:transparent;border:1px solid var(--ln2);color:var(--t1); }
+.btn-gl:hover { border-color:var(--ln3);color:var(--t0);background:rgba(255,255,255,.05); }
+.btn-gl-dk { background:transparent;border:1px solid var(--ltln2);color:var(--dk1); }
+.btn-gl-dk:hover { border-color:var(--dk);color:var(--dk); }
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
+.wrap { max-width:1280px;margin:0 auto;padding:0 48px; }
+.pad { padding:130px 0; }
+.pad-sm { padding:90px 0; }
+
+/* ═══════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════ */
+.nav {
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  height:64px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 48px;
+  transition:background .4s var(--ease),border-color .4s;
+}
+.nav.scrolled {
+  background:rgba(5,6,10,.92);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid var(--ln);
+}
+.nav-brand {
+  display:flex;align-items:center;gap:12px;
+  background:none;border:none;cursor:pointer;padding:0;
+  flex-shrink:0;
+}
+.nav-glyph { width:30px;height:30px; }
+.nav-glyph svg { width:100%;height:100%; }
+.nav-name {
+  font-family:var(--f-serif);font-size:16px;font-weight:400;
+  color:var(--t0);letter-spacing:-0.02em;
+}
+.nav-sub {
+  font-family:var(--f-mono);font-size:8px;color:var(--t3);
+  letter-spacing:2px;text-transform:uppercase;display:block;margin-top:1px;
+}
+.nav-mid {
+  display:flex;gap:34px;position:absolute;
+  left:50%;transform:translateX(-50%);
+}
+.nav-lnk {
+  font-size:13px;font-weight:400;color:var(--t2);
+  background:none;border:none;cursor:pointer;
+  font-family:var(--f-sans);transition:color .2s;padding:0;
+  letter-spacing:-0.01em;
+}
+.nav-lnk:hover { color:var(--t0); }
+.nav-r { display:flex;gap:10px;align-items:center; }
+.nav-burger {
+  display:none;flex-direction:column;gap:5px;
+  background:none;border:none;cursor:pointer;padding:6px;
+}
+.nav-burger span {
+  display:block;width:20px;height:1.5px;background:var(--t1);
+  transition:all .3s var(--ease);
+}
+.nav-burger.open span:nth-child(1){transform:rotate(45deg) translate(4.5px,4.5px);}
+.nav-burger.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+.nav-burger.open span:nth-child(3){transform:rotate(-45deg) translate(4.5px,-4.5px);}
+.nav-mob {
+  position:fixed;top:64px;left:0;right:0;z-index:899;
+  background:rgba(5,6,10,.97);backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--ln);
+  padding:28px 48px 36px;
+  display:none;flex-direction:column;gap:0;
+}
+.nav-mob.open { display:flex; }
+.nav-mob-lnk {
+  font-size:18px;font-weight:400;color:var(--t1);
+  background:none;border:none;cursor:pointer;font-family:var(--f-sans);
+  padding:14px 0;border-bottom:1px solid var(--ln);
+  text-align:left;transition:color .2s;
+}
+.nav-mob-lnk:hover { color:var(--t0); }
+.nav-mob-btns { display:flex;gap:10px;margin-top:20px; }
+
+/* ═══════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════ */
+.hero {
+  min-height:100vh;display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+}
+#hero-c {
+  position:absolute;inset:0;width:100%;height:100%;z-index:0;
+}
+.hero-grad {
+  position:absolute;inset:0;z-index:1;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(5,6,10,.3) 0%, transparent 60%),
+    linear-gradient(to bottom, rgba(5,6,10,.65) 0%, transparent 35%, transparent 65%, rgba(5,6,10,1) 100%);
+}
+.hero-body {
+  position:relative;z-index:2;flex:1;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:140px 48px 100px;
+}
+.hero-pill {
+  display:inline-flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:100px;padding:8px 20px 8px 10px;
+  margin-bottom:52px;backdrop-filter:blur(12px);
+}
+.hero-pip-wrap {
+  width:24px;height:24px;border-radius:50%;
+  background:var(--sig-c);border:1px solid var(--sig-d);
+  display:flex;align-items:center;justify-content:center;
+}
+.hero-pip {
+  width:8px;height:8px;border-radius:50%;background:var(--sig);
+  box-shadow:0 0 12px var(--sig);
+  animation:pip 2.5s ease-in-out infinite;
+}
+@keyframes pip { 0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(.7);opacity:.55;} }
+.hero-pill-txt {
+  font-family:var(--f-mono);font-size:11px;color:var(--t2);letter-spacing:.5px;
+}
+.hero-pill-txt b { color:var(--t0);font-weight:500; }
+
+.hero-h1 {
+  font-family:var(--f-serif);
+  font-size:clamp(58px, 9vw, 128px);
+  font-weight:400;line-height:.92;
+  letter-spacing:-0.04em;color:var(--t0);
+  margin-bottom:32px;max-width:980px;
+}
+/* Each line its own color weight */
+.hero-h1 .l1 { display:block;color:var(--t0); }
+.hero-h1 .l2 { display:block;font-style:italic;color:rgba(244,246,255,.38); }
+.hero-h1 .l3 {
+  display:block;
+  background:linear-gradient(90deg,var(--sig) 0%,#FF8C5A 50%,var(--sig) 100%);
+  background-size:200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:grad-shift 5s linear infinite;
+}
+@keyframes grad-shift { from{background-position:0%;}to{background-position:200%;} }
+
+.hero-p {
+  font-size:clamp(15px,1.8vw,19px);font-weight:300;
+  color:var(--t2);line-height:1.75;
+  max-width:580px;margin:0 auto 48px;
+}
+.hero-btns {
+  display:flex;gap:14px;justify-content:center;
+  flex-wrap:wrap;margin-bottom:72px;
+}
+.tech-pills {
+  display:flex;align-items:center;gap:8px;
+  flex-wrap:wrap;justify-content:center;
+}
+.tpill {
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border:1px solid var(--ln2);
+  border-radius:100px;font-family:var(--f-mono);
+  font-size:10px;color:var(--t2);letter-spacing:1.5px;
+  text-transform:uppercase;
+  transition:all .2s;cursor:default;
+}
+.tpill:hover { border-color:var(--sig-d);color:var(--sig);background:var(--sig-c); }
+.tpill-dot { width:4px;height:4px;border-radius:50%;background:var(--sig); }
+
+/* HERO SCREEN */
+.hero-screen-wrap {
+  position:relative;z-index:2;
+  width:100%;max-width:1060px;
+  margin:0 auto;padding:0 48px 100px;
+}
+.hscreen {
+  background:var(--surf);
+  border:1px solid var(--ln2);border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.04),0 60px 120px rgba(0,0,0,.8),0 0 100px rgba(255,87,34,.06);
+}
+.hbar {
+  height:44px;background:var(--surf2);border-bottom:1px solid var(--ln);
+  display:flex;align-items:center;padding:0 16px;gap:12px;position:relative;
+}
+.hbar-dots { display:flex;gap:6px; }
+.hbar-dot { width:11px;height:11px;border-radius:50%; }
+.hbar-title {
+  position:absolute;left:50%;transform:translateX(-50%);
+  font-family:var(--f-mono);font-size:10px;color:var(--t3);letter-spacing:1px;
+}
+.hbar-live {
+  margin-left:auto;display:flex;align-items:center;gap:6px;
+  font-family:var(--f-mono);font-size:9px;color:var(--grn);letter-spacing:1px;
+}
+.hbar-live::before {
+  content:'';width:5px;height:5px;border-radius:50%;
+  background:var(--grn);box-shadow:0 0 8px var(--grn);
+  animation:pip 2s infinite;
+}
+.hbody { display:grid;grid-template-columns:210px 1fr; }
+.hsb {
+  border-right:1px solid var(--ln);padding:16px 10px;
+  background:rgba(5,6,10,.5);
+}
+.hsb-proj {
+  background:var(--sig-c);border:1px solid var(--sig-d);
+  border-radius:8px;padding:10px 12px;margin-bottom:14px;
+}
+.hsb-proj-n { font-size:11px;font-weight:500;color:var(--t0);margin-bottom:3px; }
+.hsb-proj-s { font-family:var(--f-mono);font-size:8px;color:var(--sig);letter-spacing:1px; }
+.hsb-lbl {
+  font-family:var(--f-mono);font-size:7px;color:var(--t3);
+  letter-spacing:2px;text-transform:uppercase;
+  padding:0 8px;margin-top:14px;margin-bottom:6px;
+}
+.hsb-item {
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;border-radius:6px;margin-bottom:2px;
+  font-size:11px;color:var(--t2);
+}
+.hsb-item.on { background:rgba(255,255,255,.06);color:var(--t0); }
+.hsb-dot { width:5px;height:5px;border-radius:50%;background:var(--ln2);flex-shrink:0; }
+.hsb-item.on .hsb-dot { background:var(--sig); }
+.hmain { padding:20px; }
+.hkpis { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px; }
+.hkpi {
+  background:var(--surf2);border:1px solid var(--ln);
+  border-radius:10px;padding:14px 12px;
+}
+.hkpi-l {
+  font-family:var(--f-mono);font-size:7px;color:var(--t3);
+  letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;
+}
+.hkpi-v { font-family:var(--f-serif);font-size:26px;font-weight:400;line-height:1; }
+.hkpi-d { font-family:var(--f-mono);font-size:8px;color:var(--t3);margin-top:3px; }
+.hrows { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+.halerts { display:flex;flex-direction:column;gap:6px; }
+.halt {
+  display:flex;align-items:flex-start;gap:9px;
+  padding:10px 12px;border-radius:8px;border:1px solid;
+}
+.halt.r { background:var(--red-b);border-color:rgba(255,71,87,.25); }
+.halt.a { background:var(--amb-b);border-color:rgba(245,166,35,.25); }
+.halt.g { background:var(--grn-b);border-color:rgba(46,204,113,.22); }
+.halt-pip { width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:3px; }
+.halt.r .halt-pip { background:var(--red); }
+.halt.a .halt-pip { background:var(--amb); }
+.halt.g .halt-pip { background:var(--grn); }
+.halt-body { font-size:10px;color:var(--t1);line-height:1.5; }
+.halt-tag {
+  font-family:var(--f-mono);font-size:7px;letter-spacing:1px;
+  text-transform:uppercase;display:block;margin-bottom:3px;
+}
+.halt.r .halt-tag { color:var(--red); }
+.halt.a .halt-tag { color:var(--amb); }
+.halt.g .halt-tag { color:var(--grn); }
+.hai {
+  background:linear-gradient(135deg,rgba(91,141,239,.1),rgba(0,201,177,.06));
+  border:1px solid rgba(91,141,239,.22);border-radius:10px;padding:16px;
+}
+.hai-head { display:flex;align-items:center;gap:8px;margin-bottom:10px; }
+.hai-orb {
+  width:22px;height:22px;border-radius:50%;
+  background:var(--blue-b);border:1px solid rgba(91,141,239,.3);
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+}
+.hai-lbl { font-family:var(--f-mono);font-size:8px;color:var(--blue);letter-spacing:1.5px;text-transform:uppercase; }
+.hai-txt {
+  font-family:var(--f-serif);font-style:italic;
+  font-size:12px;color:var(--t1);line-height:1.65;
+}
+.hprog { margin-top:14px; }
+.hprog-hd {
+  display:flex;justify-content:space-between;
+  font-family:var(--f-mono);font-size:8px;color:var(--t3);margin-bottom:5px;
+}
+.hprog-hd b { color:var(--t0); }
+.htrack { height:3px;background:var(--ln);border-radius:2px;overflow:hidden; }
+.hfill {
+  height:100%;
+  background:linear-gradient(90deg,var(--blue),var(--teal),var(--sig));
+  border-radius:2px;width:0;transition:width 2s var(--ease);
+}
+
+/* ═══════════════════════════════════════════
+   TICKER
+═══════════════════════════════════════════ */
+.ticker {
+  border-top:1px solid var(--ln);border-bottom:1px solid var(--ln);
+  overflow:hidden;background:var(--bg2);padding:16px 0;position:relative;
+}
+.ticker::before,.ticker::after {
+  content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;
+}
+.ticker::before{left:0;background:linear-gradient(90deg,var(--bg2),transparent);}
+.ticker::after{right:0;background:linear-gradient(-90deg,var(--bg2),transparent);}
+.ticker-tr {
+  display:flex;gap:60px;
+  animation:tick 40s linear infinite;white-space:nowrap;
+}
+@keyframes tick{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.tick-item {
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--f-mono);font-size:10px;
+  color:var(--t3);letter-spacing:2px;text-transform:uppercase;flex-shrink:0;
+}
+.tick-item strong { color:var(--t1);font-weight:500; }
+.tick-sep { width:3px;height:3px;border-radius:50%;background:var(--t3);opacity:.4; }
+
+/* ═══════════════════════════════════════════
+   STATEMENT — light section
+═══════════════════════════════════════════ */
+.stmt-section { background:var(--lt);border-top:1px solid var(--ltln); }
+.stmt-grid {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:120px;align-items:center;
+}
+.stmt-h { font-size:clamp(40px,4.5vw,60px); }
+.stmt-copy {
+  font-size:17px;font-weight:300;color:var(--dk1);
+  line-height:1.85;margin-bottom:28px;letter-spacing:-0.01em;
+}
+.stmt-facts {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1px;background:var(--ltln2);
+  border:1px solid var(--ltln2);border-radius:14px;overflow:hidden;
+}
+.sfact {
+  background:var(--lt);padding:28px 24px;transition:background .2s;
+}
+.sfact:hover { background:var(--lt2); }
+.sfact-n {
+  font-family:var(--f-serif);font-size:46px;font-weight:400;
+  line-height:1;color:var(--dk);margin-bottom:6px;
+}
+.sfact-n.sig { color:var(--sig); }
+.sfact-l {
+  font-family:var(--f-mono);font-size:9px;color:var(--dk2);
+  letter-spacing:1.5px;text-transform:uppercase;
+}
+
+/* ═══════════════════════════════════════════
+   CAPABILITIES
+═══════════════════════════════════════════ */
+.cap-section { background:var(--bg2);border-top:1px solid var(--ln); }
+.cap-intro {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:120px;align-items:end;margin-bottom:72px;
+}
+.cap-panel {
+  display:grid;grid-template-columns:240px 1fr;
+  background:var(--surf);border:1px solid var(--ln2);
+  border-radius:18px;overflow:hidden;
+  box-shadow:0 40px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.03);
+}
+.cap-nav { border-right:1px solid var(--ln);background:rgba(5,6,10,.5);padding:8px; }
+.cap-nav-item {
+  display:flex;align-items:center;gap:12px;
+  padding:14px 14px;border-radius:10px;
+  background:none;border:none;cursor:pointer;
+  font-family:var(--f-sans);width:100%;text-align:left;
+  transition:all .2s;margin-bottom:2px;position:relative;
+  user-select:none;
+}
+.cap-nav-item::before {
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:2px;background:var(--sig);opacity:0;transition:.2s;
+  border-radius:0 1px 1px 0;
+}
+.cap-nav-item.active { background:rgba(255,255,255,.06); }
+.cap-nav-item.active::before { opacity:1; }
+.cap-ic {
+  width:34px;height:34px;border-radius:8px;
+  background:var(--surf2);border:1px solid var(--ln);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;flex-shrink:0;transition:all .2s;
+  pointer-events:none;
+}
+.cap-nav-item.active .cap-ic { background:var(--sig-c);border-color:var(--sig-d); }
+.cap-nl {
+  font-size:13px;font-weight:400;color:var(--t2);
+  letter-spacing:-0.01em;transition:color .2s;pointer-events:none;
+}
+.cap-nav-item.active .cap-nl { color:var(--t0); }
+.cap-nav-item:hover:not(.active) { background:rgba(255,255,255,.03); }
+.cap-nav-item:hover:not(.active) .cap-nl { color:var(--t1); }
+
+.cap-body { padding:44px 48px;background:var(--bg3); }
+.cap-pane { display:none; }
+.cap-pane.active { display:block;animation:fadeUp .3s var(--ease); }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;} }
+.cap-ey {
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--f-mono);font-size:9px;color:var(--sig);
+  letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;
+}
+.cap-ey::before { content:'';width:18px;height:1px;background:var(--sig); }
+.cap-title {
+  font-family:var(--f-serif);font-size:34px;font-weight:400;
+  line-height:1.05;letter-spacing:-0.03em;color:var(--t0);margin-bottom:16px;
+}
+.cap-desc {
+  font-size:14px;font-weight:300;color:var(--t1);
+  line-height:1.85;margin-bottom:28px;max-width:580px;
+}
+.cap-specs {
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--ln);border:1px solid var(--ln);
+  border-radius:10px;overflow:hidden;
+}
+.csp { background:var(--surf2);padding:16px 18px;transition:background .2s; }
+.csp:hover { background:var(--surf3); }
+.csp-l {
+  font-family:var(--f-mono);font-size:7px;color:var(--t3);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;
+}
+.csp-v { font-size:12px;font-weight:400;color:var(--t0); }
+
+/* ═══════════════════════════════════════════
+   TECHNOLOGIES — light
+═══════════════════════════════════════════ */
+.tech-section { background:var(--lt);border-top:1px solid var(--ltln); }
+.tech-intro {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:120px;align-items:end;margin-bottom:72px;
+}
+.tech-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:16px; }
+.tcard {
+  background:#fff;border:1px solid var(--ltln2);border-radius:14px;
+  overflow:hidden;transition:all .3s var(--ease);
+}
+.tcard:hover {
+  transform:translateY(-5px);
+  box-shadow:0 20px 60px rgba(0,0,0,.1);
+  border-color:var(--sig);
+}
+.tcard-top {
+  height:96px;display:flex;align-items:center;justify-content:center;
+  font-size:38px;background:var(--lt2);position:relative;overflow:hidden;
+}
+.tcard-top::after {
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:var(--ltln2);
+}
+.tcard-body { padding:22px 22px 24px; }
+.tcard-n { font-size:15px;font-weight:500;color:var(--dk);margin-bottom:5px;letter-spacing:-0.02em; }
+.tcard-d { font-size:12px;font-weight:300;color:var(--dk2);line-height:1.65;margin-bottom:14px; }
+.tcard-tags { display:flex;flex-wrap:wrap;gap:5px; }
+.ttag {
+  font-family:var(--f-mono);font-size:8px;color:var(--dk2);
+  letter-spacing:1px;padding:3px 8px;border-radius:4px;
+  background:var(--lt2);border:1px solid var(--ltln2);
+}
+
+/* ═══════════════════════════════════════════
+   PIPELINE
+═══════════════════════════════════════════ */
+.pipeline-section { background:var(--bg);border-top:1px solid var(--ln); }
+.pipe-intro {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:120px;align-items:end;margin-bottom:80px;
+}
+.pipe-nodes {
+  display:flex;align-items:stretch;position:relative;
+}
+.pipe-nodes::before {
+  content:'';position:absolute;top:40px;
+  left:calc(8% + 4px);right:calc(8% + 4px);
+  height:1px;
+  background:linear-gradient(90deg,rgba(255,87,34,.3),var(--sig),var(--blue),rgba(0,201,177,.4),rgba(255,255,255,.08));
+}
+.pnode { flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 8px;position:relative;z-index:1; }
+.pnode-orb {
+  width:80px;height:80px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+  margin-bottom:18px;border:1px solid var(--ln2);background:var(--surf);
+  transition:all .3s;flex-shrink:0;
+}
+.pnode:nth-child(2) .pnode-orb { background:var(--sig-c);border-color:var(--sig-d);box-shadow:0 0 0 8px rgba(255,87,34,.05),0 0 40px rgba(255,87,34,.15); }
+.pnode:nth-child(3) .pnode-orb { background:var(--blue-b);border-color:rgba(91,141,239,.3);box-shadow:0 0 0 8px rgba(91,141,239,.04); }
+.pnode:nth-child(4) .pnode-orb { background:var(--sig-c);border-color:var(--sig-d);box-shadow:0 0 0 8px rgba(255,87,34,.05); }
+.pnode-title { font-size:13px;font-weight:500;color:var(--t1);margin-bottom:6px;letter-spacing:-0.01em; }
+.pnode-desc { font-size:10px;color:var(--t3);line-height:1.65; }
+
+/* ═══════════════════════════════════════════
+   MARKET
+═══════════════════════════════════════════ */
+.market-section { background:var(--bg2);border-top:1px solid var(--ln); }
+.market-grid {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:120px;align-items:center;
+}
+.mstats {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1px;background:var(--ln);border:1px solid var(--ln);
+  border-radius:14px;overflow:hidden;margin-top:48px;
+}
+.mst {
+  background:var(--surf);padding:32px 28px;transition:background .2s;
+}
+.mst:hover { background:var(--surf2); }
+.mst-n {
+  font-family:var(--f-serif);font-size:52px;font-weight:400;
+  line-height:1;color:var(--t0);margin-bottom:8px;
+}
+.mst-n.sig { color:var(--sig); }
+.mst-l { font-family:var(--f-mono);font-size:9px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase; }
+.mcards { display:flex;flex-direction:column;gap:14px; }
+.mcard {
+  background:var(--surf);border:1px solid var(--ln);border-radius:12px;
+  padding:22px 24px;transition:all .2s;
+}
+.mcard:hover { border-color:var(--ln2);background:var(--surf2); }
+.mcard-l { font-family:var(--f-mono);font-size:8px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px; }
+.mcard-t { font-size:13px;font-weight:300;color:var(--t2);line-height:1.7; }
+.mcard-t strong { color:var(--t1);font-weight:400; }
+
+/* ═══════════════════════════════════════════
+   CONTACT
+═══════════════════════════════════════════ */
+.contact-section { background:var(--bg);border-top:1px solid var(--ln); }
+.contact-grid { display:grid;grid-template-columns:1fr 1fr;gap:100px; }
+.clinks { display:flex;flex-direction:column;gap:10px;margin-top:40px; }
+.clink {
+  display:flex;align-items:center;gap:14px;
+  padding:16px 18px;border:1px solid var(--ln);
+  border-radius:12px;text-decoration:none;background:var(--surf);
+  transition:all .2s;
+}
+.clink:hover { border-color:var(--ln2);background:var(--surf2);transform:translateX(4px); }
+.clink-ic {
+  width:38px;height:38px;border-radius:8px;
+  background:rgba(255,255,255,.05);border:1px solid var(--ln);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.clink-lbl {
+  font-family:var(--f-mono);font-size:8px;color:var(--t3);
+  letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:2px;
+}
+.clink-val { font-size:13px;font-weight:400;color:var(--t1); }
+.form-wrap {
+  background:var(--surf);border:1px solid var(--ln2);
+  border-radius:18px;padding:44px;position:relative;overflow:hidden;
+}
+.form-wrap::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--sig-d),transparent);
+}
+.form-h {
+  font-family:var(--f-serif);font-size:30px;font-weight:400;
+  color:var(--t0);margin-bottom:4px;letter-spacing:-0.03em;
+}
+.form-sub { font-family:var(--f-mono);font-size:9px;color:var(--t3);letter-spacing:.5px;margin-bottom:30px; }
+.fg { margin-bottom:14px; }
+.fg label {
+  font-family:var(--f-mono);font-size:8px;font-weight:400;
+  color:var(--t3);letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:6px;
+}
+.fg input,.fg select,.fg textarea {
+  width:100%;background:rgba(255,255,255,.05);color:var(--t0);
+  border:1px solid var(--ln2);border-radius:9px;
+  padding:12px 14px;font-size:13px;font-family:var(--f-sans);font-weight:300;
+  outline:none;transition:border-color .2s,background .2s;
+  -webkit-appearance:none;appearance:none;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus {
+  border-color:var(--sig-d);background:var(--sig-c);
+}
+.fg textarea { resize:vertical;min-height:90px;line-height:1.65; }
+.fg select option { background:var(--surf2); }
+.fg-row { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.form-btn {
+  width:100%;background:var(--sig);color:#fff;border:none;
+  padding:14px;border-radius:10px;font-size:14px;font-weight:500;
+  font-family:var(--f-sans);cursor:pointer;transition:all .2s;
+  margin-top:6px;letter-spacing:-0.01em;
+}
+.form-btn:hover { background:#FF6B3D;transform:translateY(-2px);box-shadow:0 10px 40px var(--sig-d); }
+.form-ok {
+  display:none;text-align:center;padding:48px;
+  font-family:var(--f-mono);font-size:10px;color:var(--grn);
+  letter-spacing:2px;text-transform:uppercase;
+}
+
+/* ═══════════════════════════════════════════
+   CTA
+═══════════════════════════════════════════ */
+.cta-section {
+  background:var(--bg2);border-top:1px solid var(--ln);
+  position:relative;overflow:hidden;
+}
+#cta-c { position:absolute;inset:0;width:100%;height:100%;z-index:0; }
+.cta-inner {
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:80px;align-items:center;
+}
+.cta-h { font-size:clamp(44px,5vw,72px);margin-bottom:20px; }
+.cta-p { font-size:15px;font-weight:300;color:var(--t2);line-height:1.8;margin-bottom:36px;max-width:420px; }
+.cta-btns { display:flex;gap:14px;flex-wrap:wrap; }
+.cta-stats {
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;
+  background:var(--ln);border:1px solid var(--ln);
+  border-radius:16px;overflow:hidden;
+}
+.cta-st { background:var(--surf);padding:32px 26px; }
+.cta-n { font-family:var(--f-serif);font-size:46px;font-weight:400;line-height:1;color:var(--t0);margin-bottom:6px; }
+.cta-n.sig { color:var(--sig); }
+.cta-n.grn { color:var(--grn); }
+.cta-l { font-family:var(--f-mono);font-size:8px;color:var(--t3);letter-spacing:2px;text-transform:uppercase; }
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+footer {
+  background:#030408;border-top:1px solid var(--ln);padding:52px 48px;
+}
+.footer-inner {
+  max-width:1280px;margin:0 auto;display:flex;
+  align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;
+}
+.footer-name { font-family:var(--f-serif);font-size:15px;color:var(--t2);margin-bottom:3px; }
+.footer-copy { font-family:var(--f-mono);font-size:8px;color:var(--t3);letter-spacing:1px; }
+.footer-links { display:flex;gap:28px;flex-wrap:wrap;align-items:center; }
+.fl-btn {
+  font-family:var(--f-mono);font-size:9px;color:var(--t3);
+  background:none;border:none;cursor:pointer;letter-spacing:1.5px;
+  text-transform:uppercase;transition:color .2s;padding:0;
+}
+.fl-btn:hover { color:var(--t1); }
+.fl-a {
+  font-family:var(--f-mono);font-size:9px;color:var(--t3);
+  text-decoration:none;letter-spacing:1.5px;text-transform:uppercase;transition:color .2s;
+}
+.fl-a:hover { color:var(--t1); }
+
+/* ═══════════════════════════════════════════
+   REVEAL
+═══════════════════════════════════════════ */
+.rv { opacity:0;transform:translateY(28px);transition:opacity .95s var(--ease),transform .95s var(--ease); }
+.rv.in { opacity:1;transform:none; }
+.d1{transition-delay:.1s;}.d2{transition-delay:.2s;}.d3{transition-delay:.3s;}.d4{transition-delay:.4s;}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media(max-width:1024px){
+  .wrap{padding:0 32px;}
+  .nav{padding:0 32px;}
+  footer{padding:48px 32px;}
+  .stmt-grid,.cap-intro,.tech-intro,.pipe-intro,.market-grid,.contact-grid,.cta-inner{gap:64px;}
+}
+@media(max-width:900px){
+  .nav-mid,.nav-r{display:none;}
+  .nav-burger{display:flex;}
+  .nav{padding:0 24px;}
+  .wrap{padding:0 24px;}
+  .pad{padding:80px 0;}
+  .pad-sm{padding:60px 0;}
+  footer{padding:40px 24px;}
+  .nav-mob{padding:24px;}
+  .stmt-grid,.cap-intro,.tech-intro,.pipe-intro,.market-grid,.contact-grid,.cta-inner,.tech-intro{grid-template-columns:1fr;gap:48px;}
+  .hero-body{padding:110px 24px 80px;}
+  .hero-screen-wrap{padding:0 24px 60px;}
+  .cap-panel{grid-template-columns:1fr;}
+  .cap-nav{display:flex;overflow-x:auto;scrollbar-width:none;border-right:none;border-bottom:1px solid var(--ln);padding:0;}
+  .cap-nav::-webkit-scrollbar{display:none;}
+  .cap-nav-item{flex-direction:row;border-radius:0;padding:12px 16px;margin-bottom:0;flex-shrink:0;border-bottom:2px solid transparent;}
+  .cap-nav-item.active{border-bottom-color:var(--sig);background:var(--sig-c);}
+  .cap-nav-item::before{display:none;}
+  .cap-nl{white-space:nowrap;font-size:11px;}
+  .cap-body{padding:28px 24px;}
+  .cap-specs{grid-template-columns:1fr;}
+  .tech-grid{grid-template-columns:1fr 1fr;}
+  .pipe-nodes{flex-direction:column;gap:24px;}
+  .pipe-nodes::before{display:none;}
+  .mstats{grid-template-columns:1fr 1fr;}
+  .cta-stats{grid-template-columns:1fr 1fr;}
+  .stmt-facts{grid-template-columns:1fr 1fr;}
+  .hbody{grid-template-columns:1fr;}
+  .hsb{display:none;}
+  .hkpis{grid-template-columns:repeat(2,1fr);}
+  .hrows{grid-template-columns:1fr;}
+  .fg-row{grid-template-columns:1fr;}
+  .nav-mob-btns{flex-direction:column;}
+}
+@media(max-width:600px){
+  .tech-grid{grid-template-columns:1fr;}
+  .mst-n{font-size:40px;}
+  .cta-n{font-size:36px;}
+  .sfact-n{font-size:36px;}
+  .hero-h1{font-size:clamp(48px,12vw,72px);}
+}
+
+/* ════ DASHBOARD TABS ════════════════════════════════ */
+.hscreen-tabs {
+  display:flex;border-bottom:1px solid var(--ln);
+  background:var(--surf2);overflow-x:auto;scrollbar-width:none;
+}
+.hscreen-tabs::-webkit-scrollbar{display:none;}
+.hstab {
+  padding:10px 18px;font-size:11px;font-weight:400;
+  color:var(--t3);background:none;border:none;cursor:pointer;
+  font-family:var(--f-sans);border-bottom:2px solid transparent;
+  white-space:nowrap;transition:all .2s;letter-spacing:-0.01em;
+  margin-bottom:-1px;
+}
+.hstab:hover{color:var(--t1);}
+.hstab.active{color:var(--t0);border-bottom-color:var(--sig);}
+.hpanel{display:none;}
+.hpanel.active{display:block;}
+
+/* sidebar health rows */
+.hsb-health-row{display:flex;align-items:center;gap:6px;padding:4px 8px;}
+
+/* ════ WORKBENCH ════════════════════════════════════ */
+.hwb{padding:20px;}
+.hwb-header{margin-bottom:14px;}
+.hwb-title{font-size:12px;font-weight:500;color:var(--t0);margin-bottom:3px;}
+.hwb-meta{font-family:var(--f-mono);font-size:9px;color:var(--t3);letter-spacing:.5px;}
+.hwb-tasks{display:flex;flex-direction:column;gap:6px;}
+.hwb-task{
+  display:flex;align-items:center;gap:12px;
+  background:var(--surf2);border:1px solid var(--ln);
+  border-radius:8px;padding:10px 14px;
+}
+.hwb-task-status{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+}
+.hwb-task-status.overdue{background:var(--red);box-shadow:0 0 6px var(--red);}
+.hwb-task-status.warn{background:var(--amb);box-shadow:0 0 6px var(--amb);}
+.hwb-task-status.active{background:var(--blue);box-shadow:0 0 6px var(--blue);}
+.hwb-task-status.done{background:var(--grn);}
+.hwb-task-body{flex:1;}
+.hwb-task-name{font-size:11px;font-weight:500;color:var(--t0);margin-bottom:2px;}
+.hwb-task-meta{font-size:9px;color:var(--t3);}
+.hwb-task-badge{
+  font-family:var(--f-mono);font-size:8px;font-weight:500;
+  padding:3px 8px;border-radius:4px;letter-spacing:1px;
+  flex-shrink:0;
+}
+
+/* ════ FINANCE ════════════════════════════════════ */
+.hfin{padding:20px;}
+.hfin-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+.hfin-kpi{background:var(--surf2);border:1px solid var(--ln);border-radius:8px;padding:12px 10px;}
+.hfin-kpi-l{font-family:var(--f-mono);font-size:7px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.hfin-kpi-v{font-family:var(--f-serif);font-size:22px;font-weight:400;line-height:1;}
+.hfin-bars{margin-bottom:14px;}
+.hfin-bar-label{font-family:var(--f-mono);font-size:8px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+.hfin-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.hfin-bar-cat{font-size:10px;color:var(--t2);width:90px;flex-shrink:0;}
+.hfin-bar-track{flex:1;height:6px;background:var(--surf3);border-radius:3px;overflow:hidden;}
+.hfin-bar-fill{height:100%;border-radius:3px;transition:width 1.5s var(--ease);}
+.hfin-bar-val{font-family:var(--f-mono);font-size:9px;color:var(--t3);width:100px;flex-shrink:0;text-align:right;}
+.hfin-cos{background:var(--surf2);border:1px solid var(--ln);border-radius:8px;padding:12px 14px;}
+.hfin-co-label{font-family:var(--f-mono);font-size:7px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;}
+.hfin-co{font-size:10px;color:var(--t2);padding:5px 0;border-bottom:1px solid var(--ln);overflow:hidden;}
+.hfin-co:last-child{border-bottom:none;}
+
+/* ════ LOCATIONS ════════════════════════════════════ */
+.hloc{padding:20px;}
+.hloc-header{margin-bottom:16px;}
+.hloc-title{font-size:12px;font-weight:500;color:var(--t0);margin-bottom:8px;}
+.hloc-prog-label{font-family:var(--f-mono);font-size:9px;color:var(--t3);margin-bottom:5px;}
+.hloc-prog-track{height:4px;background:var(--surf3);border-radius:2px;overflow:hidden;}
+.hloc-prog-fill{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--grn));border-radius:2px;transition:width 1.5s var(--ease);}
+.hloc-stages{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+.hloc-stage{text-align:center;}
+.hloc-stage-n{font-family:var(--f-serif);font-size:24px;font-weight:400;margin-bottom:6px;}
+.hloc-stage-bar{height:4px;border-radius:2px;margin-bottom:6px;}
+.hloc-stage-l{font-family:var(--f-mono);font-size:8px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;}
+.hloc-table{background:var(--surf2);border:1px solid var(--ln);border-radius:8px;overflow:hidden;}
+.hloc-row{display:grid;grid-template-columns:2fr .8fr .8fr .6fr;gap:8px;padding:8px 12px;border-bottom:1px solid var(--ln);font-size:10px;color:var(--t2);align-items:center;}
+.hloc-row:last-child{border-bottom:none;}
+.hloc-row.head{font-family:var(--f-mono);font-size:7px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;background:rgba(255,255,255,.02);}
+.hloc-badge{font-family:var(--f-mono);font-size:8px;font-weight:500;padding:2px 7px;border-radius:3px;letter-spacing:.5px;}
+.hloc-badge.grn{background:var(--grn-b);color:var(--grn);}
+.hloc-badge.blue{background:var(--blue-b);color:var(--blue);}
+.hloc-badge.amb{background:var(--amb-b);color:var(--amb);}
+
+/* ════ AI AGENT CHAT ════════════════════════════════ */
+.hchat{display:flex;flex-direction:column;height:320px;}
+.hchat-history{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin;}
+.hchat-msg{display:flex;gap:8px;align-items:flex-start;}
+.hchat-msg.user{flex-direction:row-reverse;}
+.hchat-avatar{width:24px;height:24px;border-radius:50%;background:var(--blue-b);border:1px solid rgba(91,141,239,.3);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.hchat-bubble{
+  max-width:75%;padding:10px 13px;border-radius:10px;
+  font-size:11px;line-height:1.6;
+}
+.hchat-bubble.user{background:var(--sig-b);border:1px solid var(--sig-d);color:var(--t1);border-radius:10px 10px 2px 10px;}
+.hchat-bubble.ai{background:var(--surf2);border:1px solid var(--ln2);color:var(--t1);border-radius:10px 10px 10px 2px;}
+.ai-cursor{display:inline-block;animation:blink .8s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+.hchat-input-wrap{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;border-top:1px solid var(--ln);
+  background:var(--surf2);
+}
+.hchat-input{
+  flex:1;font-size:11px;color:var(--t3);
+  font-style:italic;letter-spacing:-0.01em;
+}
+.hchat-send{
+  width:28px;height:28px;border-radius:7px;
+  background:var(--sig);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;cursor:pointer;
+}
+
+/* ══ WORKBENCH ══════════════════ */
+.hwb-tasks { display:flex;flex-direction:column;gap:5px; }
+.hwb-task { display:flex;align-items:center;gap:10px;background:var(--surf2);border:1px solid var(--ln);border-radius:8px;padding:9px 12px; }
+.hwb-pip { width:7px;height:7px;border-radius:50%;flex-shrink:0; }
+.hwb-body { flex:1; }
+.hwb-name { font-size:11px;font-weight:500;color:var(--t0);margin-bottom:2px; }
+.hwb-meta { font-size:9px;color:var(--t3); }
+.hwb-badge { font-family:var(--f-mono);font-size:8px;font-weight:500;padding:2px 8px;border-radius:3px;letter-spacing:.5px;white-space:nowrap; }
+
+/* ══ FINANCE ═════════════════════ */
+.hfin-kpis { display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px; }
+.hfin-row { display:flex;align-items:center;gap:10px;margin-bottom:7px; }
+.hfin-cat { font-size:10px;color:var(--t2);width:90px;flex-shrink:0; }
+.hfin-track { flex:1;height:6px;background:var(--surf3);border-radius:3px;overflow:hidden; }
+.hfin-fill { height:100%;border-radius:3px;width:0;transition:width 1.5s var(--ease); }
+.hfin-val { font-family:var(--f-mono);font-size:9px;color:var(--t3);width:100px;flex-shrink:0;text-align:right; }
+.hfin-cos { background:var(--surf2);border:1px solid var(--ln);border-radius:8px;padding:10px 12px;margin-top:12px; }
+.hfin-co { font-size:10px;color:var(--t2);padding:4px 0;border-bottom:1px solid var(--ln);overflow:hidden; }
+.hfin-co:last-child { border-bottom:none; }
+
+/* ══ LOCATIONS ═══════════════════ */
+.hloc-stages { display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px; }
+.hloc-st { text-align:center; }
+.hloc-n { font-family:var(--f-serif);font-size:22px;font-weight:400;margin-bottom:5px; }
+.hloc-bar { height:3px;border-radius:2px;margin-bottom:5px; }
+.hloc-l { font-family:var(--f-mono);font-size:7px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase; }
+.hloc-table { background:var(--surf2);border:1px solid var(--ln);border-radius:8px;overflow:hidden; }
+.hloc-row { display:grid;grid-template-columns:2fr .8fr .9fr .6fr;gap:8px;padding:7px 12px;border-bottom:1px solid var(--ln);font-size:10px;color:var(--t2);align-items:center; }
+.hloc-row:last-child { border-bottom:none; }
+.hloc-head { font-family:var(--f-mono);font-size:7px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;background:rgba(255,255,255,.02); }
+.hloc-badge { font-family:var(--f-mono);font-size:8px;font-weight:500;padding:2px 6px;border-radius:3px; }
+
+/* ══ CHAT ════════════════════════ */
+.hchat-hist { flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin; }
+.hchat-msg { display:flex;gap:7px;align-items:flex-start; }
+.hchat-msg.user { flex-direction:row-reverse; }
+.hchat-av { width:22px;height:22px;border-radius:50%;background:var(--blue-b);border:1px solid rgba(91,141,239,.3);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0; }
+.hchat-bubble { max-width:75%;padding:9px 12px;border-radius:8px;font-size:11px;line-height:1.55; }
+.hchat-bubble.user { background:var(--sig-b);border:1px solid var(--sig-d);color:var(--t1);border-radius:8px 8px 2px 8px; }
+.hchat-bubble.ai { background:var(--surf2);border:1px solid var(--ln2);color:var(--t1);border-radius:8px 8px 8px 2px; }
+.ai-cursor { display:inline-block;animation:ai-blink .8s infinite; }
+@keyframes ai-blink { 0%,100%{opacity:1;}50%{opacity:0;} }
+.hchat-input-wrap { display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--ln);background:var(--surf2); }
+.hchat-input-fake { flex:1;font-size:11px;color:var(--t3);font-style:italic; }
+.hchat-send-btn { width:26px;height:26px;border-radius:6px;background:var(--sig);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <button class="nav-brand" type="button" data-scroll="top" onclick="vpgScroll('top')">
+    <div class="nav-glyph">
+      <svg viewBox="0 0 30 30" fill="none">
+        <polygon points="15,1.5 28,8.25 28,21.75 15,28.5 2,21.75 2,8.25"
+          stroke="rgba(244,246,255,.65)" stroke-width="1" fill="none"/>
+        <polygon points="15,7 22,11 22,19 15,23 8,19 8,11"
+          stroke="rgba(244,246,255,.18)" stroke-width=".6" fill="none"/>
+        <circle cx="15" cy="15" r="2.8" fill="#FF5722"/>
+        <circle cx="15" cy="15" r="2.8" fill="#FF5722" opacity=".45">
+          <animate attributeName="r" from="2.8" to="7" dur="2.2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" from=".45" to="0" dur="2.2s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+    </div>
+    <div>
+      <div class="nav-name">Vertex Project Group</div>
+      <span class="nav-sub">Mission Control</span>
+    </div>
+  </button>
+  <div class="nav-mid">
+    <button class="nav-lnk" data-scroll="capabilities" type="button" onclick="vpgScroll('capabilities')">Capabilities</button>
+    <button class="nav-lnk" data-scroll="technologies" type="button" onclick="vpgScroll('technologies')">Technologies</button>
+    <button class="nav-lnk" data-scroll="market" type="button" onclick="vpgScroll('market')">Market</button>
+    <button class="nav-lnk" data-scroll="contact" type="button" onclick="vpgScroll('contact')">Contact</button>
+  </div>
+  <div class="nav-r">
+    <a href="https://calendly.com/klum91" class="btn btn-gl btn-sm" target="_blank">Request Demo</a>
+    <a href="https://vpg-mission-control.vercel.app" class="btn btn-wh btn-sm" target="_blank">Launch Platform</a>
+  </div>
+  <button class="nav-burger" id="burger" type="button">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="nav-mob" id="navMob">
+  <button class="nav-mob-lnk" data-scroll="capabilities" type="button" onclick="vpgScroll('capabilities');closeMob()">Capabilities</button>
+  <button class="nav-mob-lnk" data-scroll="technologies" type="button" onclick="vpgScroll('technologies');closeMob()">Technologies</button>
+  <button class="nav-mob-lnk" data-scroll="market" type="button" onclick="vpgScroll('market');closeMob()">Market</button>
+  <button class="nav-mob-lnk" data-scroll="contact" type="button" onclick="vpgScroll('contact');closeMob()">Contact</button>
+  <div class="nav-mob-btns">
+    <a href="https://calendly.com/klum91" class="btn btn-gl" target="_blank" style="flex:1;justify-content:center;">Request Demo</a>
+    <a href="https://vpg-mission-control.vercel.app" class="btn btn-sig" target="_blank" style="flex:1;justify-content:center;">Launch Platform</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas id="hero-c"></canvas>
+  <div class="hero-grad"></div>
+
+  <div class="hero-body">
+    <div class="hero-pill rv">
+      <div class="hero-pip-wrap"><div class="hero-pip"></div></div>
+      <span class="hero-pill-txt">AI Project Intelligence &nbsp;·&nbsp; <b>Built for Telecom</b></span>
+    </div>
+    <h1 class="hero-h1 rv d1">
+      <span class="l1">The command layer</span>
+      <span class="l2">telecom infrastructure</span>
+      <span class="l3">has always needed.</span>
+    </h1>
+    <p class="hero-p rv d2">VPG Mission Control is the AI-powered project management platform for every fiber and telecom build — FTTH, HFC, 5G, BEAD, OSP. From the first permit to the final closeout, one command center.</p>
+    <div class="hero-btns rv d3">
+      <a href="https://calendly.com/klum91" class="btn btn-sig btn-lg" target="_blank">Request a Demonstration</a>
+      <a href="https://vpg-mission-control.vercel.app" class="btn btn-gl btn-lg" target="_blank">Launch Platform →</a>
+    </div>
+    <div class="tech-pills rv d4">
+      <span class="tpill"><span class="tpill-dot"></span>FTTH / GPON</span>
+      <span class="tpill"><span class="tpill-dot"></span>HFC / Node Split</span>
+      <span class="tpill"><span class="tpill-dot"></span>5G Backhaul</span>
+      <span class="tpill"><span class="tpill-dot"></span>BEAD</span>
+      <span class="tpill"><span class="tpill-dot"></span>OSP / Middle Mile</span>
+      <span class="tpill"><span class="tpill-dot"></span>Fiber Trenching</span>
+    </div>
+  </div>
+
+  <!-- LIVE SCREEN -->
+  <div class="hero-screen-wrap rv d2">
+
+    <!-- TAB BAR -->
+    <div class="hscreen">
+      <div class="hbar">
+        <div class="hbar-dots">
+          <div class="hbar-dot" style="background:#FF5F57"></div>
+          <div class="hbar-dot" style="background:#FFBD2E"></div>
+          <div class="hbar-dot" style="background:#28C840"></div>
+        </div>
+        <div class="hbar-title">VPG Mission Control — Cherokee County FTTH Phase 2</div>
+        <div class="hbar-live">LIVE</div>
+      </div>
+      <div class="hscreen-tabs" id="hscreenTabs">
+        <button class="hstab active" data-htab="0" type="button">Overview</button>
+        <button class="hstab" data-htab="1" type="button">Workbench</button>
+        <button class="hstab" data-htab="2" type="button">Finance</button>
+        <button class="hstab" data-htab="3" type="button">Locations</button>
+        <button class="hstab" data-htab="4" type="button">AI Agent</button>
+      </div>
+
+      <!-- OVERVIEW -->
+      <div class="hpanel" id="htab0" style="display:grid;grid-template-columns:210px 1fr">
+        <div class="hsb">
+          <div class="hsb-proj"><div class="hsb-proj-n">Cherokee Co. FTTH</div><div class="hsb-proj-s">FTTH/GPON · Engineering</div></div>
+          <div class="hsb-lbl">Projects</div>
+          <div class="hsb-item on"><div class="hsb-dot"></div>Cherokee FTTH P2</div>
+          <div class="hsb-item"><div class="hsb-dot"></div>Anderson HFC Split</div>
+          <div class="hsb-item"><div class="hsb-dot"></div>Smith Co. BEAD</div>
+          <div class="hsb-item"><div class="hsb-dot"></div>Rusk OSP Route 7</div>
+          <div class="hsb-lbl" style="margin-top:14px">Portfolio Health</div>
+          <div class="hsb-item" style="font-size:10px"><span style="color:var(--grn)">●</span>&nbsp;2 On Track</div>
+          <div class="hsb-item" style="font-size:10px"><span style="color:var(--amb)">●</span>&nbsp;1 At Risk</div>
+          <div class="hsb-item" style="font-size:10px"><span style="color:var(--red)">●</span>&nbsp;1 Critical</div>
+        </div>
+        <div class="hmain">
+          <div class="hkpis">
+            <div class="hkpi"><div class="hkpi-l">Health Score</div><div class="hkpi-v" style="color:var(--amb)">74</div><div class="hkpi-d">↓ from 82</div></div>
+            <div class="hkpi"><div class="hkpi-l">Active Risks</div><div class="hkpi-v" style="color:var(--red)">3</div><div class="hkpi-d">2 critical</div></div>
+            <div class="hkpi"><div class="hkpi-l">Open Actions</div><div class="hkpi-v" style="color:var(--blue)">8</div><div class="hkpi-d">3 overdue</div></div>
+            <div class="hkpi"><div class="hkpi-l">Go-Live</div><div class="hkpi-v" style="color:var(--amb);font-size:20px">42d</div><div class="hkpi-d">Jun 5</div></div>
+          </div>
+          <div class="hrows">
+            <div class="halerts">
+              <div class="halt r"><div class="halt-pip"></div><div class="halt-body"><span class="halt-tag">Critical</span>TxDOT permit FM 1234 — 14 days past deadline</div></div>
+              <div class="halt a"><div class="halt-pip"></div><div class="halt-body"><span class="halt-tag">High</span>BEAD certification — 39% with 42d to go-live</div></div>
+              <div class="halt g"><div class="halt-pip"></div><div class="halt-body"><span class="halt-tag">Resolved</span>Oncor make-ready Zone 2 complete</div></div>
+            </div>
+            <div class="hai">
+              <div class="hai-head"><div class="hai-orb">⬡</div><div class="hai-lbl">AI Agent</div></div>
+              <div class="hai-txt">"Escalate TxDOT FM 1234 to District Utility Coordinator today. 14-day delay creates direct go-live exposure. Accelerate BEAD certification to 80 locations per week."</div>
+              <div class="hprog"><div class="hprog-hd"><span>Project Completion</span><b>72%</b></div><div class="htrack"><div class="hfill" id="hfill"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORKBENCH -->
+      <div class="hpanel" id="htab1" style="display:none;padding:18px">
+        <div style="font-size:12px;font-weight:500;color:var(--t0);margin-bottom:3px">Active Tasks — Cherokee Co. FTTH Phase 2</div>
+        <div style="font-family:var(--f-mono);font-size:9px;color:var(--t3);margin-bottom:12px">18 open · 3 overdue · 7 completed this week</div>
+        <div class="hwb-tasks">
+          <div class="hwb-task"><div class="hwb-pip" style="background:var(--red)"></div><div class="hwb-body"><div class="hwb-name">TxDOT Encroachment Permit — FM 1234</div><div class="hwb-meta">Submitted Apr 4 · <span style="color:var(--red)">14 days overdue</span> · Owner: PM Keenan</div></div><div class="hwb-badge" style="background:var(--red-b);color:var(--red)">OVERDUE</div></div>
+          <div class="hwb-task"><div class="hwb-pip" style="background:var(--amb)"></div><div class="hwb-body"><div class="hwb-name">811 Utility Locate — Section 4 FM 1234</div><div class="hwb-meta">Due Apr 28 · <span style="color:var(--amb)">Pending clearance</span></div></div><div class="hwb-badge" style="background:var(--amb-b);color:var(--amb)">BLOCKED</div></div>
+          <div class="hwb-task"><div class="hwb-pip" style="background:var(--blue)"></div><div class="hwb-body"><div class="hwb-name">BEAD Location Certification — Zone 3 (487 of 1,240)</div><div class="hwb-meta">In progress · Due May 15 · <span style="color:var(--blue)">39% complete</span></div></div><div class="hwb-badge" style="background:var(--blue-b);color:var(--blue)">IN PROGRESS</div></div>
+          <div class="hwb-task"><div class="hwb-pip" style="background:var(--grn)"></div><div class="hwb-body"><div class="hwb-name">Oncor Make-Ready — Zone 2 Aerial Complete</div><div class="hwb-meta">Completed Apr 18 · Strand authorized · 2.4 miles</div></div><div class="hwb-badge" style="background:var(--grn-b);color:var(--grn)">COMPLETE</div></div>
+          <div class="hwb-task"><div class="hwb-pip" style="background:var(--blue)"></div><div class="hwb-body"><div class="hwb-name">HDD Bore — Hwy 69 Crossing (320ft)</div><div class="hwb-meta">In progress · Due Apr 30 · Bore crew on site</div></div><div class="hwb-badge" style="background:var(--blue-b);color:var(--blue)">IN PROGRESS</div></div>
+        </div>
+      </div>
+
+      <!-- FINANCE -->
+      <div class="hpanel" id="htab2" style="display:none;padding:18px">
+        <div class="hfin-kpis">
+          <div class="hkpi"><div class="hkpi-l">Contract</div><div class="hkpi-v" style="color:var(--t0)">$4.2M</div></div>
+          <div class="hkpi"><div class="hkpi-l">Spent</div><div class="hkpi-v" style="color:var(--blue)">$2.8M</div></div>
+          <div class="hkpi"><div class="hkpi-l">Remaining</div><div class="hkpi-v" style="color:var(--grn)">$1.4M</div></div>
+          <div class="hkpi"><div class="hkpi-l">Change Orders</div><div class="hkpi-v" style="color:var(--amb)">+$142K</div></div>
+        </div>
+        <div style="font-family:var(--f-mono);font-size:8px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">Budget vs Spend by Category</div>
+        <div class="hfin-row"><div class="hfin-cat">Aerial/Strand</div><div class="hfin-track"><div class="hfin-fill" data-w="82%" style="background:var(--blue)"></div></div><div class="hfin-val">$820K / $1.0M</div></div>
+        <div class="hfin-row"><div class="hfin-cat">Underground</div><div class="hfin-track"><div class="hfin-fill" data-w="65%" style="background:var(--teal)"></div></div><div class="hfin-val">$650K / $1.0M</div></div>
+        <div class="hfin-row"><div class="hfin-cat">Electronics</div><div class="hfin-track"><div class="hfin-fill" data-w="91%" style="background:var(--amb)"></div></div><div class="hfin-val">$910K / $1.0M</div></div>
+        <div class="hfin-row"><div class="hfin-cat">Make-Ready</div><div class="hfin-track"><div class="hfin-fill" data-w="44%" style="background:var(--grn)"></div></div><div class="hfin-val">$308K / $700K</div></div>
+        <div class="hfin-row"><div class="hfin-cat">Permitting</div><div class="hfin-track"><div class="hfin-fill" data-w="38%" style="background:var(--sig)"></div></div><div class="hfin-val">$76K / $200K</div></div>
+        <div class="hfin-cos">
+          <div style="font-family:var(--f-mono);font-size:7px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">Recent Change Orders</div>
+          <div class="hfin-co"><span style="color:var(--amb)">CO-007</span> Additional HDD rock — Hwy 69<span style="float:right;color:var(--amb)">+$48,000</span></div>
+          <div class="hfin-co"><span style="color:var(--amb)">CO-008</span> Oncor MR scope expansion — Zone 3<span style="float:right;color:var(--amb)">+$31,200</span></div>
+          <div class="hfin-co"><span style="color:var(--grn)">CO-009</span> Aerial route optimization credit<span style="float:right;color:var(--grn)">-$12,500</span></div>
+        </div>
+      </div>
+
+      <!-- LOCATIONS -->
+      <div class="hpanel" id="htab3" style="display:none;padding:18px">
+        <div style="font-size:12px;font-weight:500;color:var(--t0);margin-bottom:6px">BEAD Location Tracker — Cherokee County</div>
+        <div style="font-family:var(--f-mono);font-size:9px;color:var(--t3);margin-bottom:5px"><b style="color:var(--t0)">487</b> of <b style="color:var(--t0)">1,240</b> certified · Draw eligible at 100%</div>
+        <div class="htrack" style="margin-bottom:14px"><div id="locfill" style="height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--grn));border-radius:2px;transition:width 1.5s var(--ease)"></div></div>
+        <div class="hloc-stages">
+          <div class="hloc-st"><div class="hloc-n" style="color:var(--t3)">284</div><div class="hloc-bar" style="background:var(--surf3)"></div><div class="hloc-l">Identified</div></div>
+          <div class="hloc-st"><div class="hloc-n" style="color:var(--blue)">312</div><div class="hloc-bar" style="background:var(--blue)"></div><div class="hloc-l">Surveyed</div></div>
+          <div class="hloc-st"><div class="hloc-n" style="color:var(--amb)">157</div><div class="hloc-bar" style="background:var(--amb)"></div><div class="hloc-l">In Progress</div></div>
+          <div class="hloc-st"><div class="hloc-n" style="color:var(--grn)">487</div><div class="hloc-bar" style="background:var(--grn)"></div><div class="hloc-l">Certified</div></div>
+        </div>
+        <div class="hloc-table">
+          <div class="hloc-row hloc-head"><div>Address</div><div>Type</div><div>Status</div><div>Updated</div></div>
+          <div class="hloc-row"><div>1424 Rusk Hwy, Jacksonville</div><div>Residential</div><div><span class="hloc-badge" style="background:var(--grn-b);color:var(--grn)">Certified</span></div><div style="color:var(--t3)">Apr 22</div></div>
+          <div class="hloc-row"><div>891 County Rd 413, Alto</div><div>Residential</div><div><span class="hloc-badge" style="background:var(--blue-b);color:var(--blue)">In Progress</span></div><div style="color:var(--t3)">Apr 24</div></div>
+          <div class="hloc-row"><div>2201 S Jackson St</div><div>Business</div><div><span class="hloc-badge" style="background:var(--amb-b);color:var(--amb)">Surveyed</span></div><div style="color:var(--t3)">Apr 19</div></div>
+          <div class="hloc-row"><div>FM 2138 Mile Marker 4.2</div><div>Anchor</div><div><span class="hloc-badge" style="background:var(--grn-b);color:var(--grn)">Certified</span></div><div style="color:var(--t3)">Apr 21</div></div>
+        </div>
+      </div>
+
+      <!-- AI AGENT -->
+      <div class="hpanel" id="htab4" style="display:none;flex-direction:column;height:320px">
+        <div class="hchat-hist">
+          <div class="hchat-msg user"><div class="hchat-bubble user">What's our biggest risk to the June 5 go-live?</div></div>
+          <div class="hchat-msg ai"><div class="hchat-av">⬡</div><div class="hchat-bubble ai">The TxDOT encroachment permit on FM 1234 is your critical path risk — 14 days past submission deadline. If unresolved this week it pushes boring 3+ weeks directly threatening June 5. Escalate to District 11 Utility Coordinator immediately. Secondary: BEAD pace at 39% needs 80 locations/week.</div></div>
+          <div class="hchat-msg user"><div class="hchat-bubble user">Generate the weekly status report</div></div>
+          <div class="hchat-msg ai"><div class="hchat-av">⬡</div><div class="hchat-bubble ai" id="aiStreamMsg">Generating Weekly Status Report...<span class="ai-cursor">|</span></div></div>
+        </div>
+        <div class="hchat-input-wrap">
+          <div class="hchat-input-fake">Ask anything about your project...</div>
+          <div class="hchat-send-btn">→</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-tr">
+    <div class="tick-item"><strong>FTTH/GPON</strong><div class="tick-sep"></div>Full Build Management</div>
+    <div class="tick-item"><strong>HFC</strong><div class="tick-sep"></div>Node Split Intelligence</div>
+    <div class="tick-item"><strong>5G Backhaul</strong><div class="tick-sep"></div>Site Acquisition Tracking</div>
+    <div class="tick-item"><strong>BEAD</strong><div class="tick-sep"></div>Federal Compliance Engine</div>
+    <div class="tick-item"><strong>OSP</strong><div class="tick-sep"></div>Route & Permit Command</div>
+    <div class="tick-item"><strong>AI Analysis</strong><div class="tick-sep"></div>Real-Time Streaming</div>
+    <div class="tick-item"><strong>15+ Alert Rules</strong><div class="tick-sep"></div>Portfolio-Wide</div>
+    <div class="tick-item"><strong>8 Report Types</strong><div class="tick-sep"></div>One Click</div>
+    <div class="tick-item"><strong>FTTH/GPON</strong><div class="tick-sep"></div>Full Build Management</div>
+    <div class="tick-item"><strong>HFC</strong><div class="tick-sep"></div>Node Split Intelligence</div>
+    <div class="tick-item"><strong>5G Backhaul</strong><div class="tick-sep"></div>Site Acquisition Tracking</div>
+    <div class="tick-item"><strong>BEAD</strong><div class="tick-sep"></div>Federal Compliance Engine</div>
+    <div class="tick-item"><strong>OSP</strong><div class="tick-sep"></div>Route & Permit Command</div>
+    <div class="tick-item"><strong>AI Analysis</strong><div class="tick-sep"></div>Real-Time Streaming</div>
+    <div class="tick-item"><strong>15+ Alert Rules</strong><div class="tick-sep"></div>Portfolio-Wide</div>
+    <div class="tick-item"><strong>8 Report Types</strong><div class="tick-sep"></div>One Click</div>
+  </div>
+</div>
+
+<!-- STATEMENT -->
+<section id="statement" class="stmt-section">
+  <div class="wrap pad">
+    <div class="stmt-grid">
+      <div class="rv">
+        <div class="eyebrow lt"><div class="eyebrow-bar"></div><div class="eyebrow-txt">The Platform</div></div>
+        <h2 class="dh dk stmt-h" style="font-size:clamp(40px,4.5vw,60px);">
+          Telecom builds are complex.<br>
+          Your PM software<br><em>should understand that.</em>
+        </h2>
+      </div>
+      <div class="rv d1">
+        <p class="stmt-copy">Generic project management tools don't know what a TxDOT encroachment permit is. They can't track your BEAD certification pace against a draw request deadline. They've never heard of Davis-Bacon, BABA, or Oncor make-ready.</p>
+        <p class="stmt-copy" style="margin-bottom:36px;">VPG Mission Control was built from the ground up by a telecom PM who lived this work. Every feature, every alert rule, every report template exists because of a real problem on a real build.</p>
+        <div class="stmt-facts">
+          <div class="sfact"><div class="sfact-n sig">9</div><div class="sfact-l">Technology templates</div></div>
+          <div class="sfact"><div class="sfact-n">15+</div><div class="sfact-l">Automated alert rules</div></div>
+          <div class="sfact"><div class="sfact-n">8</div><div class="sfact-l">Report types</div></div>
+          <div class="sfact"><div class="sfact-n sig">1</div><div class="sfact-l">Platform for all of it</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITIES -->
+<section id="capabilities" class="cap-section">
+  <div class="wrap pad">
+    <div class="cap-intro">
+      <div class="rv">
+        <div class="eyebrow"><div class="eyebrow-bar"></div><div class="eyebrow-txt">Capabilities</div></div>
+        <h2 class="dh" style="font-size:clamp(40px,4.5vw,60px);">Every tool the job<br><em>actually demands.</em></h2>
+      </div>
+      <div class="rv d1">
+        <p class="body">Six integrated capabilities covering the full lifecycle of every telecom infrastructure project — from engineering kickoff through federal closeout. No third-party integrations required. No data silos.</p>
+      </div>
+    </div>
+    <div class="cap-panel" id="capPanel">
+      <!-- SIDEBAR NAV -->
+      <div class="cap-nav" id="capNav">
+        <button class="cap-nav-item active" type="button" onclick="showCapPane(0)">
+          <div class="cap-ic">⬡</div>
+          <div class="cap-nl">AI Agent</div>
+        </button>
+        <button class="cap-nav-item" type="button" onclick="showCapPane(1)">
+          <div class="cap-ic">⚡</div>
+          <div class="cap-nl">Alert Engine</div>
+        </button>
+        <button class="cap-nav-item" type="button" onclick="showCapPane(2)">
+          <div class="cap-ic">📍</div>
+          <div class="cap-nl">Location Tracker</div>
+        </button>
+        <button class="cap-nav-item" type="button" onclick="showCapPane(3)">
+          <div class="cap-ic">📷</div>
+          <div class="cap-nl">Field Photo AI</div>
+        </button>
+        <button class="cap-nav-item" type="button" onclick="showCapPane(4)">
+          <div class="cap-ic">📄</div>
+          <div class="cap-nl">Report Engine</div>
+        </button>
+        <button class="cap-nav-item" type="button" onclick="showCapPane(5)">
+          <div class="cap-ic">💰</div>
+          <div class="cap-nl">Finance</div>
+        </button>
+      </div>
+
+      <!-- CONTENT AREA -->
+      <div class="cap-body" id="capBody">
+
+        <div id="cap0" class="cap-pane">
+          <div class="cap-ey">01 — AI Agent</div>
+          <div class="cap-title">Domain-Expert Intelligence</div>
+          <div class="cap-desc">Ask anything about your live project and receive expert analysis grounded in your actual project data. The AI Agent has deep knowledge of BEAD compliance, TxDOT encroachment permits, Davis-Bacon prevailing wage, Oncor and AEP make-ready, HDD bore rates for East Texas, GPON splicing standards, node split sequencing for HFC, and 5G small cell site acquisition. Every response streams in real time with full project context automatically injected.</div>
+          <div class="cap-specs">
+            <div class="csp"><div class="csp-l">Response Mode</div><div class="csp-v">Real-time streaming</div></div>
+            <div class="csp"><div class="csp-l">Context</div><div class="csp-v">Full project data injected</div></div>
+            <div class="csp"><div class="csp-l">Domain</div><div class="csp-v">BEAD · TxDOT · HDD · HFC · 5G</div></div>
+          </div>
+        </div>
+
+        <div id="cap1" class="cap-pane" style="display:none">
+          <div class="cap-ey">02 — Alert Engine</div>
+          <div class="cap-title">Continuous Portfolio Intelligence</div>
+          <div class="cap-desc">Fifteen-plus automated rule checks run across every project in your portfolio simultaneously — no manual triggering required. The engine monitors go-live schedule pressure, permit timeline overruns, BEAD certification pace against draw deadlines, Davis-Bacon payroll documentation gaps, 811 utility locate requirements before excavation, contractor performance, and budget burn rate. Critical issues surface before they become schedule or compliance failures.</div>
+          <div class="cap-specs">
+            <div class="csp"><div class="csp-l">Rules Active</div><div class="csp-v">15+ automated checks</div></div>
+            <div class="csp"><div class="csp-l">Coverage</div><div class="csp-v">Every project simultaneously</div></div>
+            <div class="csp"><div class="csp-l">Alert Levels</div><div class="csp-v">Critical · High · Medium</div></div>
+          </div>
+        </div>
+
+        <div id="cap2" class="cap-pane" style="display:none">
+          <div class="cap-ey">03 — Location Tracker</div>
+          <div class="cap-title">Certification to Draw Request</div>
+          <div class="cap-desc">Track every service address from Identified through TDED certification — the exact workflow required for BEAD draw request submissions. The tracker adapts its stages and field labels for BEAD, FTTH, HFC, 5G, and OSP project types. A draw request readiness alert fires automatically when all locations reach certified status. For non-BEAD projects, serves as a serviceable address database and construction status log per address.</div>
+          <div class="cap-specs">
+            <div class="csp"><div class="csp-l">Workflow</div><div class="csp-v">Identified → Certified</div></div>
+            <div class="csp"><div class="csp-l">Alert Trigger</div><div class="csp-v">100% certification</div></div>
+            <div class="csp"><div class="csp-l">Compatible</div><div class="csp-v">BEAD · FTTH · HFC · 5G · OSP</div></div>
+          </div>
+        </div>
+
+        <div id="cap3" class="cap-pane" style="display:none">
+          <div class="cap-ey">04 — Field Photo AI</div>
+          <div class="cap-title">Site Images into Project Intelligence</div>
+          <div class="cap-desc">Upload a job site photograph from any mobile browser on the job site. The platform's vision AI analyzes the image within seconds and returns a structured assessment: construction progress indicators, safety hazards, quality issues with materials or workmanship, equipment conditions, and specific corrective actions. Findings are automatically written to the project risk register and field activity log — no manual data entry required.</div>
+          <div class="cap-specs">
+            <div class="csp"><div class="csp-l">Analysis Time</div><div class="csp-v">Under 10 seconds</div></div>
+            <div class="csp"><div class="csp-l">Output</div><div class="csp-v">Structured risk &amp; action log</div></div>
+            <div class="csp"><div class="csp-l">Access</div><div class="csp-v">Mobile browser · No app required</div></div>
+          </div>
+        </div>
+
+        <div id="cap4" class="cap-pane" style="display:none">
+          <div class="cap-ey">05 — Report Engine</div>
+          <div class="cap-title">Professional Output in One Click</div>
+          <div class="cap-desc">Eight report types generated from live project data and delivered as branded Word documents. Weekly Status Report, Executive Summary, RAID Log, FTTH Network Status, BEAD Quarterly Progress Report, Field Activity Report, Change Order Summary, and Project Closeout Report. Each report is authored from your actual project data — risks, tasks, permits, field logs, vendor status — not a template with blank fields.</div>
+          <div class="cap-specs">
+            <div class="csp"><div class="csp-l">Report Types</div><div class="csp-v">8 purpose-built formats</div></div>
+            <div class="csp"><div class="csp-l">Format</div><div class="csp-v">Branded Word documents</div></div>
+            <div class="csp"><div class="csp-l">Data Source</div><div class="csp-v">Live project intelligence</div></div>
+          </div>
+        </div>
+
+        <div id="cap5" class="cap-pane" style="display:none">
+          <div class="cap-ey">06 — Finance Module</div>
+          <div class="cap-title">Budget Control for Infrastructure</div>
+          <div class="cap-desc">Apply estimator output directly as project budget baseline with margin configuration. Track actual task costs against the baseline as work completes. Manage change orders with approval workflow and automatic budget impact calculation. Automated burn rate and CO velocity alerts flag financial risk before it escalates. Export a three-tab Excel workbook for client billing and stakeholder reporting.</div>
+          <div class="cap-specs">
+            <div class="csp"><div class="csp-l">Alerts</div><div class="csp-v">Burn rate · CO velocity</div></div>
+            <div class="csp"><div class="csp-l">Export</div><div class="csp-v">3-tab Excel workbook</div></div>
+            <div class="csp"><div class="csp-l">Data</div><div class="csp-v">Real captured data only</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- TECHNOLOGIES -->
+<section id="technologies" class="tech-section">
+  <div class="wrap pad">
+    <div class="tech-intro">
+      <div class="rv">
+        <div class="eyebrow lt"><div class="eyebrow-bar"></div><div class="eyebrow-txt">Technologies</div></div>
+        <h2 class="dh dk" style="font-size:clamp(40px,4.5vw,60px);">Every technology in the stack.<br><em>Every phase.</em></h2>
+      </div>
+      <div class="rv d1">
+        <p class="body dk">Nine technology-specific templates auto-load on project creation — task libraries, document types, alert rules, and field log fields appropriate for each build type. No configuration required.</p>
+      </div>
+    </div>
+    <div class="tech-grid rv d1">
+      <div class="tcard">
+        <div class="tcard-top">🔵</div>
+        <div class="tcard-body">
+          <div class="tcard-n">FTTH / GPON</div>
+          <div class="tcard-d">Full-lifecycle management from engineering survey through ONT activation and NOC handoff.</div>
+          <div class="tcard-tags"><span class="ttag">Oncor MR</span><span class="ttag">TxDOT</span><span class="ttag">OTDR</span><span class="ttag">ONT</span></div>
+        </div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-top">📡</div>
+        <div class="tcard-body">
+          <div class="tcard-n">HFC / Node Split</div>
+          <div class="tcard-d">Node segmentation planning, activation sequencing, and RF signal quality documentation.</div>
+          <div class="tcard-tags"><span class="ttag">RF Quality</span><span class="ttag">Node Seg</span><span class="ttag">HSD</span></div>
+        </div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-top">🏛️</div>
+        <div class="tcard-body">
+          <div class="tcard-n">BEAD / Federal Grant</div>
+          <div class="tcard-d">Complete federal compliance engine — Davis-Bacon, BABA, TDED quarterly reports, draw requests.</div>
+          <div class="tcard-tags"><span class="ttag">Davis-Bacon</span><span class="ttag">BABA</span><span class="ttag">TDED</span></div>
+        </div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-top">🔧</div>
+        <div class="tcard-body">
+          <div class="tcard-n">Fiber Trenching & HDD</div>
+          <div class="tcard-d">811 locate management, bore progress tracking, pavement restoration, and permit inspection closeout.</div>
+          <div class="tcard-tags"><span class="ttag">811 Locate</span><span class="ttag">HDD Log</span><span class="ttag">Bore Progress</span></div>
+        </div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-top">📶</div>
+        <div class="tcard-body">
+          <div class="tcard-n">5G / Wireless</div>
+          <div class="tcard-d">Site acquisition, FAA clearance, zoning, structural analysis, and RF design tracking.</div>
+          <div class="tcard-tags"><span class="ttag">Site Acq</span><span class="ttag">FAA</span><span class="ttag">RF Design</span><span class="ttag">Zoning</span></div>
+        </div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-top">🛣️</div>
+        <div class="tcard-body">
+          <div class="tcard-n">OSP / Middle Mile</div>
+          <div class="tcard-d">Route-level construction tracking, segment status, ROW management, and as-built documentation.</div>
+          <div class="tcard-tags"><span class="ttag">ROW</span><span class="ttag">Route Seg</span><span class="ttag">As-Builts</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section class="pipeline-section">
+  <div class="wrap pad">
+    <div class="pipe-intro">
+      <div class="rv">
+        <div class="eyebrow"><div class="eyebrow-bar"></div><div class="eyebrow-txt">Intelligence Pipeline</div></div>
+        <h2 class="dh" style="font-size:clamp(40px,4.5vw,60px);">Raw data in.<br><em>Clear signal out.</em></h2>
+      </div>
+      <div class="rv d1">
+        <p class="body">Everything that enters VPG Mission Control flows through a structured intelligence pipeline — from raw field inputs through AI extraction into the command engine and out to client-ready deliverables.</p>
+      </div>
+    </div>
+    <div class="pipe-nodes rv d1">
+      <div class="pnode"><div class="pnode-orb">📋</div><div class="pnode-title">Field Input</div><div class="pnode-desc">Notes · Photos · Docs · RFPs</div></div>
+      <div class="pnode"><div class="pnode-orb">⬡</div><div class="pnode-title">AI Extraction</div><div class="pnode-desc">Risks · Actions · Permits · Costs</div></div>
+      <div class="pnode"><div class="pnode-orb">⚡</div><div class="pnode-title">Command Engine</div><div class="pnode-desc">Dashboard · Finance · Portfolio</div></div>
+      <div class="pnode"><div class="pnode-orb">🔔</div><div class="pnode-title">Alert System</div><div class="pnode-desc">15+ rules · Go-live · BEAD · Budget</div></div>
+      <div class="pnode"><div class="pnode-orb">📄</div><div class="pnode-title">Deliverables</div><div class="pnode-desc">Reports · Excel · TDED · Draw requests</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKET -->
+<section id="market" class="market-section">
+  <div class="wrap pad">
+    <div class="market-grid">
+      <div class="rv">
+        <div class="eyebrow"><div class="eyebrow-bar"></div><div class="eyebrow-txt">The Market</div></div>
+        <h2 class="dh" style="font-size:clamp(40px,4.5vw,60px);">$42 billion deploying now.<br><em>Zero purpose-built<br>PM tools.</em></h2>
+        <div class="mstats">
+          <div class="mst"><div class="mst-n sig">$3.3B</div><div class="mst-l">Texas BEAD Approved</div></div>
+          <div class="mst"><div class="mst-n">800+</div><div class="mst-l">TX Subgrantees</div></div>
+          <div class="mst"><div class="mst-n">4yr</div><div class="mst-l">Build Window</div></div>
+          <div class="mst"><div class="mst-n sig">Zero</div><div class="mst-l">Existing Solutions</div></div>
+        </div>
+      </div>
+      <div class="mcards rv d1">
+        <div class="mcard"><div class="mcard-l">BEAD Subgrantees</div><div class="mcard-t">Every BEAD award recipient faces mandatory quarterly TDED reporting, location certification, and Davis-Bacon documentation. <strong>Manual processes create direct clawback exposure at every milestone.</strong></div></div>
+        <div class="mcard"><div class="mcard-l">OSP Contractors</div><div class="mcard-t">OSP firms managing concurrent fiber builds need real-time portfolio visibility, change order control, and client reporting infrastructure. <strong>No dedicated solution has existed until now.</strong></div></div>
+        <div class="mcard"><div class="mcard-l">Rural Telephone Cooperatives</div><div class="mcard-t">Co-ops face identical federal compliance requirements with smaller teams. <strong>VPG Mission Control scales to any team size without additional infrastructure cost.</strong></div></div>
+        <div class="mcard"><div class="mcard-l">The Opportunity</div><div class="mcard-t">$42.45 billion in federal broadband infrastructure is deploying into a market where the PM software is a spreadsheet. <strong>The window is open. The platform is live.</strong></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="contact-section">
+  <div class="wrap pad">
+    <div class="contact-grid">
+      <div class="rv">
+        <div class="eyebrow"><div class="eyebrow-bar"></div><div class="eyebrow-txt">Contact</div></div>
+        <h2 class="dh" style="font-size:clamp(40px,4vw,56px);margin-bottom:20px;">Request a<br><em>demonstration.</em></h2>
+        <p class="body" style="margin-bottom:40px;">Schedule a 20-minute live demonstration on a real East Texas fiber project. See AI analysis, BEAD tracking, alert engine performance, and professional report generation with actual project data. Pricing is discussed during the demo based on your operation size.</p>
+        <div class="clinks">
+          <a href="https://calendly.com/klum91" class="clink" target="_blank">
+            <div class="clink-ic">📅</div>
+            <div><span class="clink-lbl">Schedule a Demo</span><span class="clink-val">calendly.com/klum91</span></div>
+          </a>
+          <a href="mailto:vertexprojectgroup@gmail.com" class="clink">
+            <div class="clink-ic">✉</div>
+            <div><span class="clink-lbl">Direct Email</span><span class="clink-val">vertexprojectgroup@gmail.com</span></div>
+          </a>
+          <a href="https://www.linkedin.com/in/keenan-lum-008347133/" class="clink" target="_blank">
+            <div class="clink-ic">💼</div>
+            <div><span class="clink-lbl">LinkedIn</span><span class="clink-val">Keenan Lum — Vertex Project Group</span></div>
+          </a>
+          <a href="https://vpg-mission-control.vercel.app" class="clink" target="_blank">
+            <div class="clink-ic">⬡</div>
+            <div><span class="clink-lbl">Live Platform</span><span class="clink-val">vpg-mission-control.vercel.app</span></div>
+          </a>
+        </div>
+      </div>
+      <div class="rv d2">
+        <div class="form-wrap">
+          <div class="form-h">Send a Message</div>
+          <div class="form-sub">Response within one business day · vertexprojectgroup@gmail.com</div>
+          <form id="cf" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+            <div class="fg-row">
+              <div class="fg"><label>Full Name</label><input type="text" name="name" placeholder="Jane Smith" required></div>
+              <div class="fg"><label>Organization</label><input type="text" name="company" placeholder="East Texas Telephone Co."></div>
+            </div>
+            <div class="fg"><label>Business Email</label><input type="email" name="email" placeholder="jane@company.com" required></div>
+            <div class="fg">
+              <label>Technology</label>
+              <select name="technology">
+                <option>FTTH / GPON</option>
+                <option>HFC / Node Split</option>
+                <option>BEAD / Federal Grant</option>
+                <option>5G / Wireless</option>
+                <option>OSP / Middle Mile</option>
+                <option>Fiber Trenching & HDD</option>
+                <option>Multiple Technologies</option>
+                <option>General Inquiry</option>
+              </select>
+            </div>
+            <div class="fg"><label>Message</label><textarea name="message" placeholder="Tell us about your project or infrastructure challenge..."></textarea></div>
+            <button type="submit" class="form-btn">Send Message →</button>
+          </form>
+          <div class="form-ok" id="fok">✓ &nbsp; Message received. We'll be in touch within one business day.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <canvas id="cta-c"></canvas>
+  <div class="wrap pad">
+    <div class="cta-inner">
+      <div class="rv">
+        <h2 class="dh cta-h">The command layer<br>your builds<br><em>have been missing.</em></h2>
+        <p class="cta-p">VPG Mission Control is live and ready. Request a 20-minute demonstration — see real AI analysis, real alert intelligence, and real reports generated on an active East Texas fiber project.</p>
+        <div class="cta-btns">
+          <a href="https://vpg-mission-control.vercel.app" class="btn btn-wh btn-lg" target="_blank">Launch the Platform</a>
+          <a href="https://calendly.com/klum91" class="btn btn-gl btn-lg" target="_blank">Request Demo →</a>
+        </div>
+      </div>
+      <div class="cta-stats rv d2">
+        <div class="cta-st"><div class="cta-n sig">$3.3B</div><div class="cta-l">TX BEAD Active</div></div>
+        <div class="cta-st"><div class="cta-n">800+</div><div class="cta-l">Subgrantees</div></div>
+        <div class="cta-st"><div class="cta-n sig">Zero</div><div class="cta-l">Existing Tools</div></div>
+        <div class="cta-st"><div class="cta-n grn">Live</div><div class="cta-l">Platform Status</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-name">Vertex Project Group</div>
+      <div class="footer-copy">© 2025 Valor and Virtue LLC · East Texas · All Rights Reserved</div>
+    </div>
+    <div class="footer-links">
+      <button class="fl-btn" data-scroll="capabilities" type="button" onclick="vpgScroll('capabilities')">Capabilities</button>
+      <button class="fl-btn" data-scroll="technologies" type="button" onclick="vpgScroll('technologies')">Technologies</button>
+      <button class="fl-btn" data-scroll="market" type="button" onclick="vpgScroll('market')">Market</button>
+      <button class="fl-btn" data-scroll="contact" type="button" onclick="vpgScroll('contact')">Contact</button>
+      <a href="https://calendly.com/klum91" class="fl-a" target="_blank">Request Demo</a>
+      <a href="https://vpg-mission-control.vercel.app" class="fl-a" target="_blank">Launch Platform</a>
+    </div>
+    <div class="footer-copy">vertexprojectgroup@gmail.com</div>
+  </div>
+</footer>
+
+<script>
+/* ══ CAPABILITIES — direct onclick ══════════════════════ */
+function showCapPane(n) {
+  for (var i = 0; i < 6; i++) {
+    var p = document.getElementById('cap' + i);
+    var b = document.querySelectorAll('#capNav button')[i];
+    if (p) p.style.display = (i === n) ? 'block' : 'none';
+    if (b) b.classList.toggle('active', i === n);
+  }
+}
+
+/* ══ HERO TABS ════════════════════════════════════════════ */
+var _autoIdx = 0, _autoTimer = null, _aiTimer = null;
+
+function switchHTab(n) {
+  _autoIdx = n;
+  var panels = ['htab0','htab1','htab2','htab3','htab4'];
+  var displayTypes = ['grid','block','block','block','flex'];
+  panels.forEach(function(id, i) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = (i === n) ? displayTypes[i] : 'none';
+  });
+  document.querySelectorAll('#hscreenTabs .hstab').forEach(function(b, i) {
+    b.classList.toggle('active', i === n);
+  });
+  if (n === 2) _animFin();
+  if (n === 3) _animLoc();
+  if (n === 4) _animAI();
+}
+
+function _animFin() {
+  document.querySelectorAll('.hfin-fill').forEach(function(f) {
+    var w = f.getAttribute('data-w');
+    if (!w) return;
+    f.style.width = '0';
+    setTimeout(function() { f.style.width = w; }, 80);
+  });
+}
+
+function _animLoc() {
+  var f = document.getElementById('locfill');
+  if (!f) return;
+  f.style.width = '0';
+  setTimeout(function() { f.style.width = '39%'; }, 80);
+}
+
+function _animAI() {
+  var el = document.getElementById('aiStreamMsg');
+  if (!el) return;
+  clearInterval(_aiTimer);
+  var msgs = [
+    'Analyzing 18 open tasks and 3 permit records...<span class="ai-cursor">|</span>',
+    'Writing executive summary and risk register...<span class="ai-cursor">|</span>',
+    '&#10003; Report ready — Cherokee FTTH Status Apr 28, 2025'
+  ];
+  var i = 0;
+  el.innerHTML = 'Generating Weekly Status Report...<span class="ai-cursor">|</span>';
+  _aiTimer = setInterval(function() {
+    i++;
+    if (i >= msgs.length) { clearInterval(_aiTimer); return; }
+    el.innerHTML = msgs[i];
+  }, 1800);
+}
+
+function _startAuto() {
+  clearInterval(_autoTimer);
+  _autoTimer = setInterval(function() {
+    _autoIdx = (_autoIdx + 1) % 5;
+    switchHTab(_autoIdx);
+  }, 4500);
+}
+
+/* ══ SCROLL NAV ══════════════════════════════════════════ */
+function vpgScroll(id) {
+  if (id === 'top') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  var el = document.getElementById(id);
+  if (!el) return;
+  window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - 70, behavior: 'smooth' });
+}
+
+document.addEventListener('click', function(e) {
+  var s = e.target.closest('[data-scroll]');
+  if (s) { e.preventDefault(); vpgScroll(s.getAttribute('data-scroll')); closeMob(); return; }
+  var tb = e.target.closest('#hscreenTabs .hstab');
+  if (tb) {
+    clearInterval(_autoTimer);
+    var idx = parseInt(tb.getAttribute('data-htab'));
+    switchHTab(idx);
+    _startAuto();
+  }
+}, true);
+
+/* ══ MOBILE NAV ══════════════════════════════════════════ */
+var _burger, _navMob, _mobOpen = false;
+function closeMob() {
+  _mobOpen = false;
+  if (_burger) _burger.classList.remove('open');
+  if (_navMob) _navMob.classList.remove('open');
+}
+
+/* ══ NAV SCROLL ══════════════════════════════════════════ */
+window.addEventListener('scroll', function() {
+  var nav = document.getElementById('nav');
+  if (nav) nav.classList.toggle('scrolled', window.pageYOffset > 20);
+}, { passive: true });
+
+/* ══ HERO CANVAS ════════════════════════════════════════ */
+var _hc, _hx, _W, _H, _nodes = [], _edges = [], _pkts = [], _mX, _mY, _fN = 0;
+var HUBS = [
+  {x:.08,y:.18},{x:.22,y:.12},{x:.38,y:.08},{x:.55,y:.14},{x:.72,y:.1},{x:.88,y:.2},
+  {x:.04,y:.38},{x:.18,y:.42},{x:.35,y:.36},{x:.52,y:.32},{x:.68,y:.38},{x:.84,y:.44},
+  {x:.1,y:.6},{x:.28,y:.55},{x:.44,y:.62},{x:.62,y:.58},{x:.78,y:.64},
+  {x:.06,y:.8},{x:.22,y:.75},{x:.4,y:.82},{x:.58,y:.78},{x:.75,y:.84}
+];
+
+function _rsz() { _W = _hc.width = _hc.offsetWidth; _H = _hc.height = _hc.offsetHeight; _mX = _W*.5; _mY = _H*.3; }
+
+function _buildNet() {
+  _nodes = []; _edges = []; _pkts = [];
+  HUBS.forEach(function(h) {
+    _nodes.push({x:h.x*_W,y:h.y*_H,r:4,hub:true,phase:Math.random()*Math.PI*2,spd:.003+Math.random()*.003});
+    for (var i = 0, s = 4+Math.floor(Math.random()*4); i < s; i++) {
+      var a = (i/s)*Math.PI*2+Math.random()*.6, d = (.04+Math.random()*.055)*Math.min(_W,_H);
+      _nodes.push({x:h.x*_W+Math.cos(a)*d,y:h.y*_H+Math.sin(a)*d,r:.8+Math.random()*.8,hub:false,phase:Math.random()*Math.PI*2,spd:.006+Math.random()*.005});
+    }
+  });
+  var seen = {}, maxD = Math.min(_W,_H)*.2;
+  _nodes.forEach(function(n,i) {
+    _nodes.map(function(m,j){return{j:j,d:Math.hypot(n.x-m.x,n.y-m.y)};})
+      .filter(function(x){return x.j!==i&&x.d<maxD;})
+      .sort(function(a,b){return a.d-b.d;})
+      .slice(0, n.hub?4:(Math.random()>.45?2:1))
+      .forEach(function(nb){var k=[i,nb.j].sort().join('-');if(!seen[k]){seen[k]=1;_edges.push({a:i,b:nb.j});}});
+  });
+  for (var i = 0; i < 22; i++) _addPkt();
+}
+
+function _addPkt() {
+  if (!_edges.length) return;
+  var e = _edges[Math.floor(Math.random()*_edges.length)];
+  _pkts.push({e:e,t:Math.random(),spd:.003+Math.random()*.006,rev:Math.random()>.5,pulse:false});
+}
+
+function _draw() {
+  _hx.clearRect(0,0,_W,_H);
+  var bg=_hx.createRadialGradient(_W*.5,_H*.3,0,_W*.5,_H*.5,_W*.6);
+  bg.addColorStop(0,'rgba(255,87,34,.06)');bg.addColorStop(1,'rgba(5,6,10,0)');
+  _hx.fillStyle=bg;_hx.fillRect(0,0,_W,_H);
+  _edges.forEach(function(e){
+    var a=_nodes[e.a],b=_nodes[e.b];if(!a||!b)return;
+    var inf=Math.max(0,1-Math.hypot((a.x+b.x)*.5-_mX,(a.y+b.y)*.5-_mY)/(_W*.25));
+    _hx.beginPath();_hx.moveTo(a.x,a.y);_hx.lineTo(b.x,b.y);
+    _hx.strokeStyle='rgba(91,141,239,'+(0.05+inf*.1)+')';_hx.lineWidth=.8;_hx.stroke();
+  });
+  if(_fN%90===0){var h=HUBS[Math.floor(Math.random()*HUBS.length)];_pkts.push({pulse:true,x:h.x*_W,y:h.y*_H,r:0,alpha:1});}
+  _pkts=_pkts.filter(function(p){
+    if(p.pulse){p.r+=3;p.alpha-=.025;if(p.alpha<=0)return false;
+      _hx.beginPath();_hx.arc(p.x,p.y,p.r,0,Math.PI*2);_hx.strokeStyle='rgba(255,87,34,'+p.alpha*.3+')';_hx.lineWidth=1;_hx.stroke();return true;}
+    p.t+=p.spd;
+    if(p.t>1){p.t=0;if(Math.random()>.6)p.e=_edges[Math.floor(Math.random()*_edges.length)];p.rev=!p.rev;}
+    var a=_nodes[p.rev?p.e.b:p.e.a],b=_nodes[p.rev?p.e.a:p.e.b];if(!a||!b)return true;
+    var px=a.x+(b.x-a.x)*p.t,py=a.y+(b.y-a.y)*p.t,tx=a.x+(b.x-a.x)*Math.max(0,p.t-.14),ty=a.y+(b.y-a.y)*Math.max(0,p.t-.14);
+    var g=_hx.createLinearGradient(tx,ty,px,py);g.addColorStop(0,'rgba(255,87,34,0)');g.addColorStop(1,'rgba(255,87,34,.55)');
+    _hx.beginPath();_hx.moveTo(tx,ty);_hx.lineTo(px,py);_hx.strokeStyle=g;_hx.lineWidth=1.8;_hx.stroke();
+    _hx.beginPath();_hx.arc(px,py,2.8,0,Math.PI*2);_hx.fillStyle='rgba(255,87,34,.9)';_hx.fill();
+    var halo=_hx.createRadialGradient(px,py,0,px,py,8);halo.addColorStop(0,'rgba(255,87,34,.2)');halo.addColorStop(1,'rgba(255,87,34,0)');
+    _hx.beginPath();_hx.arc(px,py,8,0,Math.PI*2);_hx.fillStyle=halo;_hx.fill();
+    return true;
+  });
+  _nodes.forEach(function(n){
+    n.phase+=n.spd;
+    var hov=Math.max(0,1-Math.hypot(n.x-_mX,n.y-_mY)/(_W*.14));
+    if(n.hub){_hx.beginPath();_hx.arc(n.x,n.y,12+Math.sin(n.phase)*4+hov*6,0,Math.PI*2);_hx.strokeStyle='rgba(255,87,34,'+(0.08+hov*.12)+')';_hx.lineWidth=1;_hx.stroke();}
+    _hx.beginPath();_hx.arc(n.x,n.y,n.r+(hov*2),0,Math.PI*2);
+    _hx.fillStyle=n.hub?'rgba(255,87,34,'+(0.75+hov*.25)+')':'rgba(91,141,239,'+(0.3+hov*.2)+')';_hx.fill();
+  });
+  if(_fN%130===0&&_pkts.length<30)_addPkt();
+  _fN++;requestAnimationFrame(_draw);
+}
+
+/* ══ CTA CANVAS ══════════════════════════════════════════ */
+var _cc, _cx;
+function _drawCTA(){
+  if(!_cc)return;_cx.clearRect(0,0,_cc.width,_cc.height);
+  var t=Date.now()*.0004;
+  _cx.strokeStyle='rgba(255,255,255,.04)';_cx.lineWidth=.5;
+  for(var x=0;x<_cc.width;x+=64){_cx.beginPath();_cx.moveTo(x,0);_cx.lineTo(x,_cc.height);_cx.stroke();}
+  for(var y=0;y<_cc.height;y+=64){_cx.beginPath();_cx.moveTo(0,y);_cx.lineTo(_cc.width,y);_cx.stroke();}
+  var ox=_cc.width*.12,oy=_cc.height*.5;
+  for(var i=0;i<8;i++){var r=55+i*85+Math.sin(t+i*.9)*18;_cx.beginPath();_cx.arc(ox,oy,r,0,Math.PI*2);_cx.strokeStyle='rgba(255,87,34,'+(0.05-i*.005)+')';_cx.lineWidth=.8;_cx.stroke();}
+  requestAnimationFrame(_drawCTA);
+}
+
+/* ══ REVEAL ══════════════════════════════════════════════ */
+function _initReveal(){
+  var obs=new IntersectionObserver(function(ents){ents.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target);}});},{threshold:.07,rootMargin:'0px 0px -30px 0px'});
+  document.querySelectorAll('.rv').forEach(function(el){obs.observe(el);});
+}
+
+/* ══ FORM ════════════════════════════════════════════════ */
+function _initForm(){
+  var form=document.getElementById('cf');if(!form)return;
+  form.addEventListener('submit',async function(e){
+    e.preventDefault();var btn=this.querySelector('.form-btn');
+    btn.textContent='Sending…';btn.disabled=true;
+    try{var r=await fetch(this.action,{method:'POST',body:new FormData(this),headers:{Accept:'application/json'}});
+      if(r.ok){this.style.display='none';document.getElementById('fok').style.display='block';}
+      else{btn.textContent='Send Message →';btn.disabled=false;}
+    }catch(err){btn.textContent='Send Message →';btn.disabled=false;}
+  });
+}
+
+/* ══ INIT ════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+  _burger = document.getElementById('burger');
+  _navMob = document.getElementById('navMob');
+  if (_burger) {
+    _burger.addEventListener('click', function() {
+      _mobOpen = !_mobOpen;
+      _burger.classList.toggle('open', _mobOpen);
+      _navMob.classList.toggle('open', _mobOpen);
+    });
+  }
+
+  // Hero tabs init
+  switchHTab(0);
+  setTimeout(function(){ var f=document.getElementById('hfill');if(f)f.style.width='72%'; }, 1200);
+  _startAuto();
+
+  // Cap panes init
+  for (var i = 1; i < 6; i++) {
+    var p = document.getElementById('cap' + i);
+    if (p) p.style.display = 'none';
+  }
+
+  // Hero canvas
+  _hc = document.getElementById('hero-c');
+  if (_hc) {
+    _hx = _hc.getContext('2d'); _rsz(); _buildNet();
+    document.addEventListener('mousemove', function(e){ var r=_hc.getBoundingClientRect();_mX=e.clientX-r.left;_mY=e.clientY-r.top; }, {passive:true});
+    window.addEventListener('resize', function(){ _rsz(); _buildNet(); }, {passive:true});
+    _draw();
+  }
+
+  // CTA canvas
+  _cc = document.getElementById('cta-c');
+  if (_cc) {
+    _cx = _cc.getContext('2d');
+    function rszC(){ _cc.width=_cc.offsetWidth; _cc.height=_cc.offsetHeight; }
+    rszC(); window.addEventListener('resize', rszC, {passive:true}); _drawCTA();
+  }
+
+  _initReveal();
+  _initForm();
+});
+</script>
+</body>
+</html>
